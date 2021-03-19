@@ -13,4 +13,5 @@ class ArticleRepository {
     fun getNews(country:String,category:String): Observable<NewsModel> {
         return apiInterface.getNews(country,category,"af1a8053ab83464cbaad07e5c518b592")
     }
+
 }
