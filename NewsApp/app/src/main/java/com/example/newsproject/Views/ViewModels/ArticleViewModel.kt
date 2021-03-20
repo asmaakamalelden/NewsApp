@@ -9,6 +9,7 @@ import com.example.newsproject.Repositories.ArticleRepository
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import java.util.*
 
 class ArticleViewModel: ViewModel() {
     var articleRepository: ArticleRepository? = null
@@ -20,6 +21,15 @@ class ArticleViewModel: ViewModel() {
         articleLiveData= MutableLiveData()
 
     }
+  fun getZippedArticles(country:String,category1: String,category2:String,category3:String) {
+    disposable= articleRepository?.getAllNews(country,category1, category2, category3)
+            ?.subscribeOn(Schedulers.io())
+            ?.observeOn(AndroidSchedulers.mainThread())
+            ?.subscribe(
+                    {
+                        response -> articleLiveData!!.setValue(response.articles) }
+            ) { error -> showError(error.toString()) }
+}
 
     fun getArticles(country:String,category: String) {
         disposable= articleRepository?.getNews(country,category)

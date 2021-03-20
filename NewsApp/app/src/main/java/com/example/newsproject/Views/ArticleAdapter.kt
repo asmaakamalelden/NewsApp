@@ -35,7 +35,7 @@ class ArticleAdapter (val context: Context) : RecyclerView.Adapter<ArticleAdapte
                 .into(holder.itemView.imgview_article)
 
         holder.itemView.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(articleList[position].url))
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("googlechrome://navigate?url="+articleList[position].url))
             context.startActivity(intent);
         }
     }

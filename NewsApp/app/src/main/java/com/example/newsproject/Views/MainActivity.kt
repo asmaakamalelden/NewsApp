@@ -1,17 +1,24 @@
 package com.example.newsproject.Views
 
 import android.content.Intent
+import android.opengl.Visibility
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import android.widget.ArrayAdapter
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import com.anurag.multiselectionspinner.MultiSelectionSpinnerDialog
 import com.example.newsproject.R
 import kotlinx.android.synthetic.main.activity_main.*
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MultiSelectionSpinnerDialog.OnMultiSpinnerSelectionListener {
 
     lateinit var countryList: List<String>
     lateinit var categoryList: List<String>
+    val selectedCategories : MutableList<String> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,8 +27,13 @@ class MainActivity : AppCompatActivity() {
         setCountryData()
         setCategoryData()
 
+        submit_btn_id.isEnabled=false
         submit_btn_id.setOnClickListener {
-            val intent = Intent(this, ArticlesActivity::class.java)
+            var intent = Intent(this, ArticlesActivity::class.java)
+            intent.putExtra("COUNTRY",spinner_country_id.selectedItem.toString())
+            intent.putExtra("CATEGORY1",selectedCategories[0])
+            intent.putExtra("CATEGORY2",selectedCategories[1])
+            intent.putExtra("CATEGORY3",selectedCategories[2])
             startActivity(intent)
         }
     }
@@ -36,10 +48,31 @@ class MainActivity : AppCompatActivity() {
         spinner_country_id.setAdapter(countryAdapter)
     }
 
+
     fun setCategoryData() {
         categoryList = listOf("business", "entertainment", "general", "health", "science", "sports", "technology")
-        val categoryAdapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, categoryList)
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinner_category_id.setAdapter(categoryAdapter)
+        spinner_category_id.setAdapterWithOutImage(this, categoryList, this)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            spinner_category_id.initMultiSpinner(this, spinner_category_id)
+        }
+    }
+
+    override fun OnMultiSpinnerItemSelected(chosenItems: MutableList<String>?) {
+        selectedCategories.clear()
+        for (i in chosenItems!!.indices) {
+            selectedCategories.add(chosenItems[i])
+        }
+        enableSubmitBtn()
+    }
+
+    fun enableSubmitBtn(){
+        if(selectedCategories.size==3){
+            submit_btn_id.isEnabled=true
+            tv_hint_id.visibility=View.GONE
+        }
+        else{
+            tv_hint_id.visibility=View.VISIBLE
+            submit_btn_id.isEnabled=false
+        }
     }
 }
