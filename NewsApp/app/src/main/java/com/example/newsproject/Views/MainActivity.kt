@@ -1,6 +1,8 @@
 package com.example.newsproject.Views
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.opengl.Visibility
 import android.os.Build
 import android.os.Bundle
@@ -16,26 +18,45 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), MultiSelectionSpinnerDialog.OnMultiSpinnerSelectionListener {
 
+
     lateinit var countryList: List<String>
     lateinit var categoryList: List<String>
     val selectedCategories : MutableList<String> = mutableListOf()
+     val sharedPrefFile = "sharedpreference"
+    var FIRST_VISIBLE=0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
 
         setCountryData()
         setCategoryData()
 
         submit_btn_id.isEnabled=false
         submit_btn_id.setOnClickListener {
+            setSharedPref()
             var intent = Intent(this, ArticlesActivity::class.java)
             intent.putExtra("COUNTRY",spinner_country_id.selectedItem.toString())
             intent.putExtra("CATEGORY1",selectedCategories[0])
             intent.putExtra("CATEGORY2",selectedCategories[1])
             intent.putExtra("CATEGORY3",selectedCategories[2])
             startActivity(intent)
+
+
         }
+    }
+    fun setSharedPref(){
+        val sharedPreferences: SharedPreferences = this.getSharedPreferences(sharedPrefFile, Context.MODE_PRIVATE)
+        val editor:SharedPreferences.Editor =  sharedPreferences.edit()
+        FIRST_VISIBLE=1
+        editor.putInt("first_visit",FIRST_VISIBLE)
+        editor.putString("country_key",spinner_country_id.selectedItem.toString())
+        editor.putString("category1_key",selectedCategories[0])
+        editor.putString("category2_key",selectedCategories[1])
+        editor.putString("category3_key",selectedCategories[2])
+        editor.apply()
+        editor.commit()
     }
 
     fun setCountryData() {

@@ -1,5 +1,8 @@
 package com.example.newsproject.Views
 
+import android.content.Context
+import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -18,6 +21,9 @@ import com.example.newsproject.R
 import com.example.newsproject.Repositories.RoomDB.ArticleEntity
 import com.example.newsproject.Views.ViewModels.ArticleViewModel
 import kotlinx.android.synthetic.main.activity_articles.*
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -29,6 +35,8 @@ class ArticlesActivity : AppCompatActivity() {
     lateinit var viewModel: ArticleViewModel
     lateinit var adapter: ArticleAdapter
     lateinit var articleDBItem: ArticleEntity
+    val sharedPrefFile = "sharedpreference"
+
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         getMenuInflater().inflate(R.menu.main_menu, menu);
@@ -45,7 +53,8 @@ class ArticlesActivity : AppCompatActivity() {
         viewModel.getallArticlesLiveData()?.observe(this, Observer {
             articleDBList = it as ArrayList<ArticleEntity>
             for (x in articleDBList) {
-                var article = ArticleModel(SourceModel(Math.random().toString(), x.sourceName), "", x.title, x.description, x.url, x.urlToImage, Date(), "")
+                    val date = SimpleDateFormat("EEE MMM d HH:mm:ss zzz yyyy").parse(x.publishedAt)
+                var article = ArticleModel(SourceModel(Math.random().toString(), x.sourceName), "", x.title, x.description, x.url, x.urlToImage, date, "")
                 articleList.add(article)
             }
             adapter.setArticles(articleList.sortedByDescending { it.publishedAt })
@@ -57,17 +66,18 @@ class ArticlesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_articles)
 
-        val country = intent.getStringExtra("COUNTRY")
-        val category1 = intent.getStringExtra("CATEGORY1")
-        val category2 = intent.getStringExtra("CATEGORY2")
-        val category3 = intent.getStringExtra("CATEGORY3")
+        val sharedPreferences: SharedPreferences = this.getSharedPreferences(sharedPrefFile, Context.MODE_PRIVATE)
+        val country = sharedPreferences.getString("country_key","ae")
+        val category1 = sharedPreferences.getString("category1_key","general")
+        val category2 = sharedPreferences.getString("category2_key","health")
+        val category3 = sharedPreferences.getString("category3_key","science")
         setCategoryData()
         adapter = ArticleAdapter(this)
         rv_article_id.adapter = adapter
         rv_article_id.layoutManager = LinearLayoutManager(this)
 
         viewModel = ViewModelProviders.of(this).get(ArticleViewModel::class.java)
-        viewModel.getZippedArticles(country, category1, category2, category3)
+        viewModel.getZippedArticles(country!!, category1!!, category2!!, category3!!)
         viewModel.getArticleLiveData()?.observe(this, Observer {
             articleList = it as ArrayList<ArticleModel>
             adapter.setArticles(articleList.sortedByDescending { it.publishedAt })
